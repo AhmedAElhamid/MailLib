@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailLib.Core", "MailLib.Core\MailLib.Core.csproj", "{F8279CC7-E941-4D05-A38E-D288AC1E641C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailLib.SMTP", "MailLib.SMTP\MailLib.SMTP.csproj", "{2C8B2D5D-E1A5-4C7B-A646-CAB96DE62178}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailLib.Demo", "MailLib.Demo\MailLib.Demo.csproj", "{A83D5D52-219E-452F-B8EB-A0FFF73DF9C1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F8279CC7-E941-4D05-A38E-D288AC1E641C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8279CC7-E941-4D05-A38E-D288AC1E641C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8279CC7-E941-4D05-A38E-D288AC1E641C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8279CC7-E941-4D05-A38E-D288AC1E641C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C8B2D5D-E1A5-4C7B-A646-CAB96DE62178}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C8B2D5D-E1A5-4C7B-A646-CAB96DE62178}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C8B2D5D-E1A5-4C7B-A646-CAB96DE62178}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C8B2D5D-E1A5-4C7B-A646-CAB96DE62178}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A83D5D52-219E-452F-B8EB-A0FFF73DF9C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A83D5D52-219E-452F-B8EB-A0FFF73DF9C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A83D5D52-219E-452F-B8EB-A0FFF73DF9C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A83D5D52-219E-452F-B8EB-A0FFF73DF9C1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

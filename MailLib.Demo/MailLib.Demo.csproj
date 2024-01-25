@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\MailLib.SMTP\MailLib.SMTP.csproj"/>
+    </ItemGroup>
+
+    <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
+        <ItemGroup>
+            <Folder Include="**\wwwroot\**\*.*"/>
+        </ItemGroup>
+        <Copy SourceFiles="@(Folder)" DestinationFolder="$(OutDir)\%(RecursiveDir)"/>
+    </Target>
+</Project>
