@@ -1,8 +1,8 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+using MailLib.Extensions;
 using MailLib.Models;
 using MailLib.SMTP;
-using MailLib.SMTP.Extensions;
 using Microsoft.Extensions.Options;
 
 
@@ -21,7 +21,7 @@ var emailService = new SmtpEmailService(smtpConfiguration);
 
 const string subject = "Welcome To Application";
 const string templateName = "invite-user.html";
-var htmlBody = HtmlTemplateHelper.ExtractStringFromHtml(GetTemplatePath(templateName));
+var htmlBody = await HtmlTemplateHelper.ExtractStringFromHtml(GetTemplatePath(templateName));
 var mailResources = GetMailResources();
 
 
