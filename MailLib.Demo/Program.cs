@@ -21,7 +21,7 @@ var emailService = new SmtpEmailService(smtpConfiguration);
 
 const string subject = "Welcome To Application";
 const string templateName = "invite-user.html";
-var htmlBody = await HtmlTemplateHelper.ExtractStringFromHtml(GetTemplatePath(templateName));
+var htmlBody = await HtmlTemplateHelper.ExtractBodyFromHtmlTemplate(GetTemplatePath(templateName));
 var mailResources = GetMailResources();
 
 
