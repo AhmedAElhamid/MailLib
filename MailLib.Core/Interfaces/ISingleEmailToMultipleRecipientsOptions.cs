@@ -10,5 +10,5 @@ public interface ISingleEmailToMultipleRecipientsOptions
 
     string Body { get; }
 
-    bool IsBodyHtml { get; }
+    bool IsHtmlBody { get; }
 }

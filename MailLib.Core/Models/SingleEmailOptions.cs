@@ -12,37 +12,29 @@ public class SingleEmailOptions : ISingleEmailOptions
 
     public string Body { get; private set; }
 
-    public MailResources MailResources { get; set; } = new();
-    public bool IsBodyHtml { get; private set; }
+    public MailResources MailResources { get; set; }
+    public bool IsHtmlBody { get; private set; }
 
-    public string? PlainTextContent => !IsBodyHtml ? Body : null;
+    public string? PlainTextContent => !IsHtmlBody ? Body : null;
 
-    public string? HtmlContent => !IsBodyHtml ? null : Body;
+    public string? HtmlContent => !IsHtmlBody ? null : Body;
 
-    public SingleEmailOptions(EmailAddressModel to, string subject, string textBody,
-        MailResources? mailResources = default)
-    {
-        To = to;
-        Subject = ValidationExtensions.NotEmptyOrWhiteSpace(subject, nameof(subject));
-        Body = ValidationExtensions.NotEmptyOrWhiteSpace(textBody, nameof(textBody));
-        IsBodyHtml = false;
-        MailResources = mailResources ?? new MailResources();
-    }
 
     [JsonConstructor]
     public SingleEmailOptions(
         EmailAddressModel to,
         string subject,
-        string htmlBody,
-        List<TemplatePlaceholder> placeholders,
+        string body,
+        List<TemplatePlaceholder>? placeholders = default,
+        bool isHtmlBody = true,
         MailResources? mailResources = default
     )
     {
-        var input = htmlBody.ReplacePlaceholders(placeholders);
+        body = body.ReplacePlaceholders(placeholders);
         To = to;
         Subject = ValidationExtensions.NotEmptyOrWhiteSpace(subject, nameof(subject));
-        Body = ValidationExtensions.NotEmptyOrWhiteSpace(input, "body");
-        IsBodyHtml = true;
+        Body = ValidationExtensions.NotEmptyOrWhiteSpace(body, "body");
+        IsHtmlBody = isHtmlBody;
         MailResources = mailResources ?? new MailResources();
     }
 }

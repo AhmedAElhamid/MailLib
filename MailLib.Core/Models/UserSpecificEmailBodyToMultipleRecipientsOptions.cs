@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using MailLib.Extensions;
 
 namespace MailLib.Models;
@@ -10,20 +11,25 @@ public class UserSpecificEmailBodyToMultipleRecipientsOptions
 
     public MailResources MailResources { get; set; }
 
+    public bool IsHtmlBody { get; private set; }
 
+
+    [JsonConstructor]
     public UserSpecificEmailBodyToMultipleRecipientsOptions(
         IEnumerable<EmailAddressModel> to,
         string subject,
-        string htmlBody,
+        string body,
         Func<EmailAddressModel, List<TemplatePlaceholder>> placeholders,
+        bool isHtmlBody = true,
         MailResources? mailResources = default
     )
     {
         Subject = ValidationExtensions.NotEmptyOrWhiteSpace(subject, nameof(subject));
         foreach (var emailOptions in from recipient in to
-                 let input = htmlBody.ReplacePlaceholders(placeholders(recipient))
-                 select new SingleEmailOptions(recipient, subject, input, mailResources))
+                 select new SingleEmailOptions(recipient, subject, body,
+                     placeholders(recipient), isHtmlBody, mailResources))
             EmailOptionsMap.Add(emailOptions);
+        IsHtmlBody = isHtmlBody;
         MailResources = mailResources ?? new MailResources();
     }
 }

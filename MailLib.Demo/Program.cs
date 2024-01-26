@@ -14,6 +14,7 @@ var users = new List<EmailAddressModel>
     new("yuknigukko@gufum.com", "yuknigukko"),
     new("hirom41547@grassdev.com", "hirom41547"),
 };
+var user = users.First();
 
 var smtpConfiguration = Options.Create(options);
 var emailService = new SmtpEmailService(smtpConfiguration);
@@ -23,20 +24,35 @@ const string templateName = "invite-user.html";
 var htmlBody = HtmlTemplateHelper.ExtractStringFromHtml(GetTemplatePath(templateName));
 var mailResources = GetMailResources();
 
-// This is an example of sending a single email to a single recipient
+
+// This is an example of sending a single email to a single recipient with a text body
 
 #region SingleEmailOptions
 
-var user = users.First();
+var singleRecipientOptionsWithTextBody = new SingleEmailOptions(
+    user,
+    subject,
+    "Welcome to Application {user-name}",
+    [new TemplatePlaceholder { Placeholder = "{user-name}", Value = user.Name }],
+    false,
+    mailResources: mailResources);
 
-var singleRecipientOptions = new SingleEmailOptions(
+await emailService.SendEmail(singleRecipientOptionsWithTextBody);
+
+#endregion
+
+// This is an example of sending a single email to a single recipient with an html body
+
+#region SingleEmailOptions
+
+var singleRecipientOptionsWithHtmlBody = new SingleEmailOptions(
     user,
     subject,
     htmlBody,
     [new TemplatePlaceholder { Placeholder = "{user-name}", Value = user.Name }],
-    mailResources);
+    mailResources: mailResources);
 
-await emailService.SendEmail(singleRecipientOptions);
+await emailService.SendEmail(singleRecipientOptionsWithHtmlBody);
 
 #endregion
 
@@ -49,7 +65,7 @@ var multipleRecipientsOptions = new SingleEmailToMultipleRecipientsOptions(
     subject,
     htmlBody,
     [new TemplatePlaceholder { Placeholder = "{user-name}", Value = "User" }],
-    mailResources
+    mailResources: mailResources
 );
 
 await emailService.SendEmail(multipleRecipientsOptions);
@@ -65,7 +81,7 @@ var userSpecificEmailBodyToMultipleRecipientsOptions = new UserSpecificEmailBody
     subject,
     htmlBody,
     recipient => [new TemplatePlaceholder { Placeholder = "{user-name}", Value = recipient.Name }],
-    mailResources
+    mailResources: mailResources
 );
 
 await emailService.SendEmail(userSpecificEmailBodyToMultipleRecipientsOptions);

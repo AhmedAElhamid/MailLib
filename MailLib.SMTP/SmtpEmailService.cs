@@ -21,7 +21,8 @@ public class SmtpEmailService(
         if (string.IsNullOrEmpty(options.To.Email)) return;
 
         var email = await GetEmail(_smtpConfiguration.From,
-            options.To.Email, options.Subject, options.Body, options.MailResources, cancellationToken);
+            options.To.Email, options.Subject, options.Body, options.MailResources, options.IsHtmlBody,
+            cancellationToken);
 
         await Send(_smtpConfiguration, email, cancellationToken);
     }
@@ -32,7 +33,7 @@ public class SmtpEmailService(
         var recipients = options.To.AsNotNull().Select(to => to.Email).ToList();
 
         var email = await GetEmail(_smtpConfiguration.From,
-            recipients, options.Subject, options.Body, options.MailResources, cancellationToken);
+            recipients, options.Subject, options.Body, options.MailResources, options.IsHtmlBody, cancellationToken);
 
         await Send(_smtpConfiguration, email, cancellationToken);
     }
@@ -42,8 +43,7 @@ public class SmtpEmailService(
         if (options.EmailOptionsMap.IsEmpty()) return;
 
         var emails = await GetEmails(_smtpConfiguration.From, options.Subject,
-            GetUsersEmails(options.EmailOptionsMap),
-            options.MailResources, cancellationToken);
+            GetUsersEmails(options.EmailOptionsMap), options.MailResources, options.IsHtmlBody, cancellationToken);
 
         await BulkSend(_smtpConfiguration, emails, cancellationToken);
     }
@@ -74,10 +74,10 @@ public class SmtpEmailService(
     }
 
     private static async Task<List<MimeMessage>> GetEmails(string from, string subject, List<UserEmail> userEmails,
-        MailResources mailResources, CancellationToken cancellationToken = default)
+        MailResources mailResources, bool isHtmlBody, CancellationToken cancellationToken = default)
     {
         var emails = new List<MimeMessage>();
-        var bodyBuilder = await AddAttachmentsAndResources(new BodyBuilder(),
+        var builder = await AddAttachmentsAndResources(new BodyBuilder(),
             mailResources, cancellationToken);
         var fromAddress = MailboxAddress.Parse(from);
         foreach (var userEmail in userEmails)
@@ -86,8 +86,8 @@ public class SmtpEmailService(
             email.From.Add(fromAddress);
             email.Subject = subject;
             email.To.Add(MailboxAddress.Parse(userEmail.To));
-            bodyBuilder.HtmlBody = userEmail.Body;
-            email.Body = bodyBuilder.ToMessageBody();
+            AddBody(builder, userEmail.Body, isHtmlBody);
+            email.Body = builder.ToMessageBody();
             emails.Add(email);
         }
 
@@ -95,31 +95,33 @@ public class SmtpEmailService(
     }
 
     private static async Task<MimeMessage> GetEmail(string from, string to, string subject, string body,
-        MailResources mailResources, CancellationToken cancellationToken = default)
+        MailResources mailResources, bool isHtmlBody, CancellationToken cancellationToken = default)
     {
         var email = new MimeMessage();
         email.From.Add(MailboxAddress.Parse(from));
         email.To.Add(MailboxAddress.Parse(to));
         email.Subject = subject;
-        email.Body = await GetMailBody(body, mailResources, cancellationToken);
+        email.Body = await GetMailBody(body, mailResources, isHtmlBody, cancellationToken);
         return email;
     }
 
     private static async Task<MimeMessage> GetEmail(string from, List<string> tos, string subject, string body,
-        MailResources mailResources, CancellationToken cancellationToken = default)
+        MailResources mailResources, bool isHtmlBody, CancellationToken cancellationToken = default)
     {
         var email = new MimeMessage();
         email.From.Add(MailboxAddress.Parse(from));
         tos.ForEach(to => email.To.Add(MailboxAddress.Parse(to)));
         email.Subject = subject;
-        email.Body = await GetMailBody(body, mailResources, cancellationToken);
+        email.Body = await GetMailBody(body, mailResources, isHtmlBody, cancellationToken);
         return email;
     }
 
     private static async Task<MimeEntity> GetMailBody(string body, MailResources mailResources,
+        bool isHtmlBody,
         CancellationToken cancellationToken = default)
     {
-        var builder = new BodyBuilder { HtmlBody = body };
+        var builder = new BodyBuilder();
+        AddBody(builder, body, isHtmlBody);
         await AddAttachmentsAndResources(builder, mailResources, cancellationToken);
         return builder.ToMessageBody();
     }
@@ -145,6 +147,13 @@ public class SmtpEmailService(
                 builder.Attachments.Add(a.ContentId, a.ContentBytes, ContentType.Parse(a.ContentType));
         }
 
+        return builder;
+    }
+
+    private static BodyBuilder AddBody(BodyBuilder builder, string body, bool isHtmlBody)
+    {
+        if (isHtmlBody) builder.HtmlBody = body;
+        else builder.TextBody = body;
         return builder;
     }
 

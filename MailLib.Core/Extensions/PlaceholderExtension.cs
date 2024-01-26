@@ -6,15 +6,15 @@ namespace MailLib.Extensions;
 internal static class PlaceholderExtension
 {
     public static string ReplacePlaceholders(
-        this string htmlBody,
+        this string body,
         List<TemplatePlaceholder>? placeholders)
     {
-        if (placeholders.IsEmpty()) return htmlBody;
+        if (placeholders.IsEmpty()) return body;
 
-        var htmlBodyBuilder = placeholders!
-            .Aggregate(new StringBuilder(htmlBody), (current, placeholder) =>
+        var bodyBuilder = placeholders!
+            .Aggregate(new StringBuilder(body), (current, placeholder) =>
                 current.Replace(placeholder.Placeholder.Trim(), placeholder.Value));
 
-        return htmlBodyBuilder.ToString();
+        return bodyBuilder.ToString();
     }
 }
