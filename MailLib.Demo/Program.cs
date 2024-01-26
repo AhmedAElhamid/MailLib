@@ -40,7 +40,9 @@ var mailResources = new MailResources
     }
 };
 
-var user = new EmailAddressModel("hirom41547@grassdev.com", "hirom41547");
+// This is an example of sending a single email to a single recipient
+
+var user = new EmailAddressModel("yuknigukko@gufum.com", "yuknigukko");
 
 var singleRecipientOptions = new SingleEmailOptions(
     user,
@@ -51,10 +53,12 @@ var singleRecipientOptions = new SingleEmailOptions(
 
 await emailService.SendEmail(singleRecipientOptions);
 
+// This is an example of sending a single email to multiple recipients
+
 var users = new List<EmailAddressModel>
 {
+    new("yuknigukko@gufum.com", "yuknigukko"),
     new("hirom41547@grassdev.com", "hirom41547"),
-    new("teltuzakki@gufum.com", "teltuzakki"),
 };
 
 var multipleRecipientsOptions = new SingleEmailToMultipleRecipientsOptions(
@@ -66,6 +70,19 @@ var multipleRecipientsOptions = new SingleEmailToMultipleRecipientsOptions(
 );
 
 await emailService.SendEmail(multipleRecipientsOptions);
+
+// This is a more advanced example of sending emails to multiple recipients
+
+var userSpecificEmailBodyToMultipleRecipientsOptions = new UserSpecificEmailBodyToMultipleRecipientsOptions(
+    users,
+    subject,
+    htmlBody,
+    recipient => [new TemplatePlaceholder { Placeholder = "{user-name}", Value = recipient.Name }],
+    mailResources
+);
+
+await emailService.SendEmail(userSpecificEmailBodyToMultipleRecipientsOptions);
+
 return;
 
 static string GetTemplatePath(string templateName)

@@ -30,12 +30,30 @@ public class SmtpEmailService(
     {
         if (options.To.IsEmpty()) return;
         var recipients = options.To.AsNotNull().Select(to => to.Email).ToList();
-        
+
         var email = await GetEmail(_smtpConfiguration.From,
             recipients, options.Subject, options.Body, options.MailResources, cancellationToken);
 
         await Send(_smtpConfiguration, email, cancellationToken);
     }
+
+    public async Task SendEmail(UserSpecificEmailBodyToMultipleRecipientsOptions options)
+    {
+        if (options.EmailOptionsMap.IsEmpty()) return;
+
+        var emails = await GetEmails(_smtpConfiguration.From, options.Subject,
+            GetUsersEmails(options.EmailOptionsMap),
+            options.MailResources, cancellationToken);
+
+        await BulkSend(_smtpConfiguration, emails, cancellationToken);
+    }
+
+    private static List<UserEmail> GetUsersEmails(IEnumerable<SingleEmailOptions> optionsCollection)
+        => optionsCollection.Select(options => new UserEmail
+        {
+            To = options.To.Email,
+            Body = options.Body
+        }).ToList();
 
     private static async Task Send(SmtpConfiguration configuration,
         MimeMessage email, CancellationToken cancellationToken = default)
@@ -44,6 +62,36 @@ public class SmtpEmailService(
         await ConnectAndAuthenticate(client, configuration, cancellationToken);
         await client.SendAsync(email, cancellationToken);
         await Disconnect(client, cancellationToken);
+    }
+
+    private static async Task BulkSend(SmtpConfiguration configuration,
+        List<MimeMessage> emails, CancellationToken cancellationToken = default)
+    {
+        using var client = new SmtpClient();
+        await ConnectAndAuthenticate(client, configuration, cancellationToken);
+        foreach (var email in emails) await client.SendAsync(email, cancellationToken);
+        await Disconnect(client, cancellationToken);
+    }
+
+    private static async Task<List<MimeMessage>> GetEmails(string from, string subject, List<UserEmail> userEmails,
+        MailResources mailResources, CancellationToken cancellationToken = default)
+    {
+        var emails = new List<MimeMessage>();
+        var bodyBuilder = await AddAttachmentsAndResources(new BodyBuilder(),
+            mailResources, cancellationToken);
+        var fromAddress = MailboxAddress.Parse(from);
+        foreach (var userEmail in userEmails)
+        {
+            var email = new MimeMessage();
+            email.From.Add(fromAddress);
+            email.Subject = subject;
+            email.To.Add(MailboxAddress.Parse(userEmail.To));
+            bodyBuilder.HtmlBody = userEmail.Body;
+            email.Body = bodyBuilder.ToMessageBody();
+            emails.Add(email);
+        }
+
+        return emails;
     }
 
     private static async Task<MimeMessage> GetEmail(string from, string to, string subject, string body,
@@ -72,7 +120,13 @@ public class SmtpEmailService(
         CancellationToken cancellationToken = default)
     {
         var builder = new BodyBuilder { HtmlBody = body };
+        await AddAttachmentsAndResources(builder, mailResources, cancellationToken);
+        return builder.ToMessageBody();
+    }
 
+    private static async Task<BodyBuilder> AddAttachmentsAndResources(BodyBuilder builder, MailResources mailResources,
+        CancellationToken cancellationToken = default)
+    {
         foreach (var r in mailResources.LinkedResources.AsNotNull()!)
         {
             var resource = !string.IsNullOrEmpty(r.ContentPath)
@@ -91,7 +145,7 @@ public class SmtpEmailService(
                 builder.Attachments.Add(a.ContentId, a.ContentBytes, ContentType.Parse(a.ContentType));
         }
 
-        return builder.ToMessageBody();
+        return builder;
     }
 
     private static async Task ConnectAndAuthenticate(IMailService client, SmtpConfiguration configuration,
@@ -109,4 +163,10 @@ public class SmtpEmailService(
     {
         await client.DisconnectAsync(true, cancellationToken);
     }
+}
+
+internal class UserEmail
+{
+    public string To { get; set; } = string.Empty;
+    public string Body { get; set; } = string.Empty;
 }

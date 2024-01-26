@@ -46,10 +46,10 @@ public class SingleEmailToMultipleRecipientsOptions : ISingleEmailToMultipleReci
         List<TemplatePlaceholder> placeholders,
         MailResources? mailResources = default)
     {
-        var input = htmlBody.ReplacePlaceholders(placeholders);
+        var body = htmlBody.ReplacePlaceholders(placeholders);
         To = to;
         Subject = ValidationExtensions.NotEmptyOrWhiteSpace(subject, nameof(subject));
-        Body = ValidationExtensions.NotEmptyOrWhiteSpace(input, "body");
+        Body = ValidationExtensions.NotEmptyOrWhiteSpace(body, "body");
         IsBodyHtml = true;
         MailResources = mailResources ?? new MailResources();
     }
